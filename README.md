@@ -1,8 +1,9 @@
 # Pong for Android (LÖVE2D)
 A two player _Pong_ clone, written in Lua using LÖVE2D.
 
-**This game is under development and has only been tested on a single Android 11 device. Some bugs, kinks, and such are WIP.**
-
+**This game is under development and has only been tested on a single Android 11 device. Some bugs, kinks, missing features (title screen, restart button, etc.) and such are WIP.**
+## Gameplay Demo
+[Gameplay Demo](docs/demo.gif)
 ## Prerequisites
 ### Running
 - LÖVE for Android (v11.3) with storage permissions granted 
