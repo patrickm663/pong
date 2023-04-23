@@ -40,6 +40,6 @@ make run
 ### From Files
 Add/access the `.love` file to `Download/lovegame` or similar and open with LÖVE for Android.
 ## Acknowledgements
-The `Makefile` is from https://github.com/CSaratakij/LovePlayground. The author @CSaratakij also guided me on which version of LÖVE for Android to use.  
+The `Makefile` is from https://github.com/CSaratakij/LovePlayground. The author [@CSaratakij](https://github.com/CSaratakij) also guided me on which version of LÖVE for Android to use.  
 
 The original _Pong_ game is copyright Atari Inc, 1972.
