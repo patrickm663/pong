@@ -1,4 +1,4 @@
-[![License: MIT](https://img.shields.io/badg    e/License-MIT-yellow.svg)](https://opensourc    e.org/licenses/MIT)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 # Pong for Android (LÖVE2D)
 A two player _Pong_ clone, written in Lua using LÖVE2D.
 
