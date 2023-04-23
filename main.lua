@@ -26,10 +26,7 @@ function love.load()
 
   math.randomseed(os.time())
   listOfCircles = {}
-  N = 1
-  for i=1,N do
-    createCircle()
-  end
+  createCircle()
   -- ai
   rightPaddle = createPaddle(1)
   -- human
@@ -152,7 +149,7 @@ function love.draw()
   love.graphics.line(WIDTH/2, 0, WIDTH/2, HEIGHT)
   if score.cpu > 4 or score.human > 4 then
     love.graphics.print("GAME OVER", WIDTH/2, 80)
-    love.timer.sleep(5)
+    love.timer.sleep(2)
     love.event.quit()
   end
 end
