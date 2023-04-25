@@ -11,6 +11,7 @@
 score = {}
 score.cpu = 0
 score.human = 0
+score.max = 4
 
 font = love.graphics.newFont("assets/retro.ttf", 20)
 
@@ -77,20 +78,10 @@ function love.update(dt)
       if v.x >= RIGHT then
 	score.cpu = score.cpu + 1
 	love.load()
-	--v.directionX = -v.directionX 
-	--v.x = RIGHT - 1
-	--v.colourR = randomInt(255) 
-	--v.colourG = randomInt(255) 
-	--v.colourB = randomInt(255) 
 	-- Left wall
       elseif v.x <= LEFT then
 	score.human = score.human + 1
 	love.load()
-	--v.directionX = -v.directionX 
-	--v.x = LEFT + 1
-	--v.colourR = randomInt(255) 
-	--v.colourG = randomInt(255) 
-	--v.colourB = randomInt(255) 
 	-- Bottom wall
       elseif v.y >= BOTTOM then
 	v.directionY = -v.directionY 
@@ -149,7 +140,7 @@ function love.draw()
   love.graphics.setColor(1, 1, 1)
   love.graphics.rectangle("fill", leftPaddle.x, leftPaddle.y, leftPaddle.width, leftPaddle.height)
   love.graphics.rectangle("fill", rightPaddle.x, rightPaddle.y, rightPaddle.width, rightPaddle.height)
-  if score.cpu > 4 or score.human > 4 then
+  if score.cpu > score.max or score.human > score.max then
     love.graphics.print("GAME OVER", 20+WIDTH/2, 50+HEIGHT/2, 1.5*math.pi)
     love.timer.sleep(1)
     love.event.quit()
