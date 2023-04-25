@@ -12,6 +12,8 @@ score = {}
 score.cpu = 0
 score.human = 0
 
+font = love.graphics.newFont("assets/retro.ttf", 20)
+
 sound = love.audio.newSource("assets/paddle.mp3", "static")
 
 function love.load()
@@ -136,6 +138,9 @@ function love.touchpressed(id, x, y, dx, dy, pressure)
 end
 
 function love.draw()
+  love.graphics.setFont(font)
+  love.graphics.print(score.cpu.."-"..score.human, WIDTH/2, 40+HEIGHT/2, 1.5*math.pi)
+  love.graphics.line(WIDTH/2, 0, WIDTH/2, HEIGHT)
   for i, v in ipairs(listOfCircles) do
     love.graphics.setColor(love.math.colorFromBytes(v.colourR, v.colourB, v.colourG))
     love.graphics.circle("fill", v.x, v.y, v.radius)
@@ -144,12 +149,9 @@ function love.draw()
   love.graphics.setColor(1, 1, 1)
   love.graphics.rectangle("fill", leftPaddle.x, leftPaddle.y, leftPaddle.width, leftPaddle.height)
   love.graphics.rectangle("fill", rightPaddle.x, rightPaddle.y, rightPaddle.width, rightPaddle.height)
-
-  love.graphics.print("Score: "..score.cpu.."-"..score.human, WIDTH/2, 50)
-  love.graphics.line(WIDTH/2, 0, WIDTH/2, HEIGHT)
   if score.cpu > 4 or score.human > 4 then
-    love.graphics.print("GAME OVER", WIDTH/2, 80)
-    love.timer.sleep(2)
+    love.graphics.print("GAME OVER", 20+WIDTH/2, 50+HEIGHT/2, 1.5*math.pi)
+    love.timer.sleep(1)
     love.event.quit()
   end
 end
