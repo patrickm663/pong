@@ -8,13 +8,20 @@
 --
 -- THE SOFTWARE IS PROVIDED “AS IS”, WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
+-- Game menu source: https://love2d.org/forums/posting.php?mode=quote&f=3&p=226031&sid=e3c771a4c6dc4b423cb77c43dd589eb8
+
 score = {}
 score.cpu = 0
 score.human = 0
 score.max = 4
 
-font = love.graphics.newFont("assets/retro.ttf", 20)
+-- Possible game states: MENU, GAME, HOWTOPLAY, SETTINGS, GAMEOVER 
+gameState = "GAME"
 
+gameMenu = {"Start Game", "How to Play", "Settings", "Quit"}
+selectedMenu = 1
+
+font = love.graphics.newFont("assets/retro.ttf", 20)
 sound = love.audio.newSource("assets/paddle.mp3", "static")
 
 function love.load()
@@ -27,27 +34,34 @@ function love.load()
   LEFTPADDLE = LEFT + 5
   RIGHTPADDLE = RIGHT - 5
 
-  math.randomseed(os.time())
-  listOfCircles = {}
-  createCircle()
+  FONTHEIGHT = font:getHeight()
+
+  -- game ball
+  ball = createBall()
+
   -- ai
   rightPaddle = createPaddle(1)
   -- human
   leftPaddle = createPaddle(2)
+
+  -- check if game is over 
+  if score.cpu > score.max or score.human > score.max then
+    gameState = "GAMEOVER"
+  end
 end
 
-function createCircle()
-  circ = {}
-  circ.x = WIDTH/2
-  circ.y = HEIGHT/2
-  circ.radius = 5
-  circ.speed = 120
-  circ.directionX = 0.8
-  circ.directionY = 0.9
-  circ.colourR = randomInt(255) 
-  circ.colourG = randomInt(255) 
-  circ.colourB = randomInt(255) 
-  table.insert(listOfCircles, circ)
+function createBall()
+  b = {}
+  b.x = WIDTH/2
+  b.y = HEIGHT/2
+  b.radius = 5
+  b.speed = 120
+  b.directionX = 0.8
+  b.directionY = 0.9
+  b.colourR = randomInt(255) 
+  b.colourG = randomInt(255) 
+  b.colourB = randomInt(255) 
+  return b
 end
 
 function createPaddle(opp)
@@ -71,78 +85,114 @@ end
 
 function love.update(dt)
   local function moveCircle()
-    for i, v in ipairs(listOfCircles) do
-      v.x = v.x + v.directionX * v.speed * dt
-      v.y = v.y + v.directionY * v.speed * dt
-	-- Right wall
-      if v.x >= RIGHT then
-	score.cpu = score.cpu + 1
-	love.load()
-	-- Left wall
-      elseif v.x <= LEFT then
-	score.human = score.human + 1
-	love.load()
-	-- Bottom wall
-      elseif v.y >= BOTTOM then
-	v.directionY = -v.directionY 
-	v.y = BOTTOM - 1
-	-- Top wall
-      elseif v.y <= TOP then
-	v.directionY = -v.directionY 
-	v.y = TOP + 1
-	-- Left paddle
-      elseif v.x <= (LEFTPADDLE+5) and v.y <= (leftPaddle.y+leftPaddle.height-7) and v.y >= (leftPaddle.y-leftPaddle.height+20) and v.directionX < 0 then
-	v.directionX = -v.directionX 
-	v.x = LEFTPADDLE + 10
-	v.colourR = randomInt(255) 
-	v.colourG = randomInt(255) 
-	v.colourB = randomInt(255) 
-	sound:play()
-	-- Right paddle
-      elseif v.x >= (RIGHTPADDLE-5) and v.y <= (rightPaddle.y+rightPaddle.height-7) and v.y >= (rightPaddle.y-rightPaddle.height+20) and v.directionX > 0 then
-	v.directionX = -v.directionX 
-	v.x = RIGHTPADDLE - 10
-	v.colourR = randomInt(255) 
-	v.colourG = randomInt(255) 
-	v.colourB = randomInt(255) 
-	sound:play()
-      end	
+    ball.x = ball.x + ball.directionX * ball.speed * dt
+    ball.y = ball.y + ball.directionY * ball.speed * dt
+    -- Right wall
+    if ball.x >= RIGHT then
+      score.cpu = score.cpu + 1
+      love.load()
+      -- Left wall
+    elseif ball.x <= LEFT then
+      score.human = score.human + 1
+      love.load()
+      -- Bottom wall
+    elseif ball.y >= BOTTOM then
+      ball.directionY = -ball.directionY 
+      ball.y = BOTTOM - 1
+      -- Top wall
+    elseif ball.y <= TOP then
+      ball.directionY = -ball.directionY 
+      ball.y = TOP + 1
+      -- Left paddle
+    elseif ball.x <= (LEFTPADDLE+5) and ball.y <= (leftPaddle.y+leftPaddle.height-7) and ball.y >= (leftPaddle.y-leftPaddle.height+20) and ball.directionX < 0 then
+      ball.directionX = -ball.directionX 
+      ball.x = LEFTPADDLE + 10
+      ball.colourR = randomInt(255) 
+      ball.colourG = randomInt(255) 
+      ball.colourB = randomInt(255) 
+      sound:play()
+      -- Right paddle
+    elseif ball.x >= (RIGHTPADDLE-5) and ball.y <= (rightPaddle.y+rightPaddle.height-7) and ball.y >= (rightPaddle.y-rightPaddle.height+20) and ball.directionX > 0 then
+      ball.directionX = -ball.directionX 
+      ball.x = RIGHTPADDLE - 10
+      ball.colourR = randomInt(255) 
+      ball.colourG = randomInt(255) 
+      ball.colourB = randomInt(255) 
+      sound:play()
+    end	
+  end
+
+  local function movePaddle(p)
+    p.y = p.y + p.speed * p.direction * dt
+    if p.y <= TOP or p.y >= (BOTTOM - 40) then
+      p.direction = -p.direction
     end
   end
-  local function movePaddle(p)
-      p.y = p.y + p.speed * p.direction * dt
-      if p.y <= TOP or p.y >= (BOTTOM - 40) then
-	p.direction = -p.direction
-      end
+
+  if gameState == "GAME" then
+    moveCircle()
+    movePaddle(rightPaddle)
+    movePaddle(leftPaddle)
   end
-  moveCircle()
-  movePaddle(rightPaddle)
-  movePaddle(leftPaddle)
 end
 
 function love.touchpressed(id, x, y, dx, dy, pressure)
-  if x > WIDTH/2 then
-    rightPaddle.direction = -rightPaddle.direction
-  else
-    leftPaddle.direction = -leftPaddle.direction
+  if gameState == "GAME" then
+    if x > WIDTH/2 then
+      rightPaddle.direction = -rightPaddle.direction
+    else
+      leftPaddle.direction = -leftPaddle.direction
+    end
+  elseif gameState == "MENU" then
+    -- click menu items
   end
 end
 
 function love.draw()
   love.graphics.setFont(font)
+  if gameState == "MENU" then
+    drawMenu()
+  elseif gameState == "HOWTOPLAY" then
+    drawHowToPlay()
+  elseif gameState == "SETTINGS" then
+    drawSettings()
+  elseif gameState == "GAME" then
+    drawGame()
+  elseif gameState == "GAMEOVER" then 
+    drawGameOver()
+  end
+end
+
+function drawGameOver()
+  love.graphics.print("GAME OVER", 20+WIDTH/2, 50+HEIGHT/2, 1.5*math.pi)
+  love.timer.sleep(1)
+  love.event.quit()
+end
+
+function drawMenu()
+  -- Game menu
+
+end
+
+function drawHowToPlay()
+  -- How to play
+end
+
+function drawSettings()
+  -- Game settings
+end
+
+function drawGame()
+  -- Score board
   love.graphics.print(score.cpu.."-"..score.human, WIDTH/2, 40+HEIGHT/2, 1.5*math.pi)
   love.graphics.line(WIDTH/2, 0, WIDTH/2, HEIGHT)
-  for i, v in ipairs(listOfCircles) do
-    love.graphics.setColor(love.math.colorFromBytes(v.colourR, v.colourB, v.colourG))
-    love.graphics.circle("fill", v.x, v.y, v.radius)
-  end
 
+  -- Game ball
+  love.graphics.setColor(love.math.colorFromBytes(ball.colourR, ball.colourB, ball.colourG))
+  love.graphics.circle("fill", ball.x, ball.y, ball.radius)
+
+  -- Paddles
   love.graphics.setColor(1, 1, 1)
   love.graphics.rectangle("fill", leftPaddle.x, leftPaddle.y, leftPaddle.width, leftPaddle.height)
   love.graphics.rectangle("fill", rightPaddle.x, rightPaddle.y, rightPaddle.width, rightPaddle.height)
-  if score.cpu > score.max or score.human > score.max then
-    love.graphics.print("GAME OVER", 20+WIDTH/2, 50+HEIGHT/2, 1.5*math.pi)
-    love.timer.sleep(1)
-    love.event.quit()
-  end
 end
