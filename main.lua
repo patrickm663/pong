@@ -13,7 +13,7 @@
 score = {}
 score.cpu = 0
 score.human = 0
-score.max = 4
+score.max = 0
 
 -- Possible game states: MENU, GAME, HOWTOPLAY, SETTINGS, GAMEOVER 
 gameState = "GAME"
@@ -25,28 +25,28 @@ font = love.graphics.newFont("assets/retro.ttf", 20)
 sound = love.audio.newSource("assets/paddle.mp3", "static")
 
 function love.load()
-  WIDTH, HEIGHT = love.graphics.getDimensions()
-  LEFT = 35
-  RIGHT = WIDTH - 5
-  TOP = 35
-  BOTTOM = HEIGHT - 5
-
-  LEFTPADDLE = LEFT + 5
-  RIGHTPADDLE = RIGHT - 5
-
-  FONTHEIGHT = font:getHeight()
-
-  -- game ball
-  ball = createBall()
-
-  -- ai
-  rightPaddle = createPaddle(1)
-  -- human
-  leftPaddle = createPaddle(2)
-
   -- check if game is over 
   if score.cpu > score.max or score.human > score.max then
     gameState = "GAMEOVER"
+  else
+    WIDTH, HEIGHT = love.graphics.getDimensions()
+    LEFT = 35
+    RIGHT = WIDTH - 5
+    TOP = 35
+    BOTTOM = HEIGHT - 5
+
+    LEFTPADDLE = LEFT + 5
+    RIGHTPADDLE = RIGHT - 5
+
+    FONTHEIGHT = font:getHeight()
+
+    -- game ball
+    ball = createBall()
+
+    -- ai
+    rightPaddle = createPaddle(1)
+    -- human
+    leftPaddle = createPaddle(2)
   end
 end
 
@@ -84,9 +84,10 @@ function randomInt(n)
 end
 
 function love.update(dt)
-  local function moveCircle()
+  local function moveBall()
     ball.x = ball.x + ball.directionX * ball.speed * dt
     ball.y = ball.y + ball.directionY * ball.speed * dt
+
     -- Right wall
     if ball.x >= RIGHT then
       score.cpu = score.cpu + 1
@@ -130,7 +131,7 @@ function love.update(dt)
   end
 
   if gameState == "GAME" then
-    moveCircle()
+    moveBall()
     movePaddle(rightPaddle)
     movePaddle(leftPaddle)
   end
@@ -145,6 +146,10 @@ function love.touchpressed(id, x, y, dx, dy, pressure)
     end
   elseif gameState == "MENU" then
     -- click menu items
+  elseif gameState == "GAMEOVER" then
+    if x > 0 then
+      love.event.quit()
+    end
   end
 end
 
@@ -164,14 +169,20 @@ function love.draw()
 end
 
 function drawGameOver()
-  love.graphics.print("GAME OVER", 20+WIDTH/2, 50+HEIGHT/2, 1.5*math.pi)
-  love.timer.sleep(1)
-  love.event.quit()
+  local gameOverMessage = ""
+  love.graphics.print("GAME OVER", WIDTH/2, 70+HEIGHT/2, 1.5*math.pi)
+  love.graphics.print("FINAL SCORE", 20+WIDTH/2, 70+HEIGHT/2, 1.5*math.pi)
+  love.graphics.print(score.cpu.."-"..score.human, 40+WIDTH/2, 70+HEIGHT/2, 1.5*math.pi)
+  if score.cpu > score.human then
+    gameOverMessage = "YOU LOSE"
+  else
+    gameOverMessage = "YOU WIN"
+  end
+  love.graphics.print(gameOverMessage, 60+WIDTH/2, 70+HEIGHT/2, 1.5*math.pi)
 end
 
 function drawMenu()
   -- Game menu
-
 end
 
 function drawHowToPlay()
