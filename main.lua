@@ -16,12 +16,13 @@ score.human = 0
 score.max = 0
 
 -- Possible game states: MENU, GAME, HOWTOPLAY, SETTINGS, GAMEOVER 
-gameState = "GAME"
+gameState = "MENU"
 
 gameMenu = {"Start Game", "How to Play", "Settings", "Quit"}
 selectedMenu = 1
 
-font = love.graphics.newFont("assets/retro.ttf", 20)
+fontHeight = 20
+font = love.graphics.newFont("assets/retro.ttf", fontHeight)
 sound = love.audio.newSource("assets/paddle.mp3", "static")
 
 function love.load()
@@ -37,8 +38,6 @@ function love.load()
 
     LEFTPADDLE = LEFT + 5
     RIGHTPADDLE = RIGHT - 5
-
-    FONTHEIGHT = font:getHeight()
 
     -- game ball
     ball = createBall()
@@ -146,10 +145,11 @@ function love.touchpressed(id, x, y, dx, dy, pressure)
     end
   elseif gameState == "MENU" then
     -- click menu items
+    gameState = "GAME"
   elseif gameState == "GAMEOVER" then
-    if x > 0 then
-      love.event.quit()
-    end
+    --if x > 0 then
+    love.event.quit()
+    --end
   end
 end
 
@@ -170,19 +170,41 @@ end
 
 function drawGameOver()
   local gameOverMessage = ""
-  love.graphics.print("GAME OVER", WIDTH/2, 70+HEIGHT/2, 1.5*math.pi)
-  love.graphics.print("FINAL SCORE", 20+WIDTH/2, 70+HEIGHT/2, 1.5*math.pi)
-  love.graphics.print(score.cpu.."-"..score.human, 40+WIDTH/2, 70+HEIGHT/2, 1.5*math.pi)
+  love.graphics.printf("GAME OVER", WIDTH/2, HEIGHT, HEIGHT, "center", 1.5*math.pi)
+  love.graphics.printf("FINAL SCORE: "..score.cpu.."-"..score.human, fontHeight+WIDTH/2, HEIGHT, HEIGHT, "center", 1.5*math.pi)
   if score.cpu > score.human then
-    gameOverMessage = "YOU LOSE"
-  else
-    gameOverMessage = "YOU WIN"
+    gameOverMessage = "YOU LOSE!"
+  elseif score.cpu < score.human then
+    gameOverMessage = "YOU WIN!"
+  else 
+    gameOverMessage = "DRAW!"
   end
-  love.graphics.print(gameOverMessage, 60+WIDTH/2, 70+HEIGHT/2, 1.5*math.pi)
+  love.graphics.printf(gameOverMessage, (2*fontHeight)+WIDTH/2, HEIGHT, HEIGHT, "center", 1.5*math.pi)
+  love.graphics.printf("RETRY?", (4*fontHeight)+WIDTH/2, HEIGHT, HEIGHT, "center", 1.5*math.pi)
+  love.graphics.printf("QUIT", (5*fontHeight)+WIDTH/2, HEIGHT, HEIGHT, "center", 1.5*math.pi)
 end
 
 function drawMenu()
   -- Game menu
+  local horizonalCentre = WIDTH/2
+  local verticalCentre = HEIGHT/2
+  local startX = horizonalCentre - (fontHeight*(#gameMenu / 2))
+
+  love.graphics.setColor(1, 1, 1, 1)
+  love.graphics.printf("PONG", -(3*fontHeight)+WIDTH/2, HEIGHT, HEIGHT, "center", 1.5*math.pi)
+
+  -- draw menu items
+  for i = 1, #gameMenu do
+    if i == selectedMenu then 
+    -- colour yellow
+      love.graphics.setColor(1, 1, 0, 1)
+    else
+    -- colour white
+      love.graphics.setColor(1, 1, 1, 1)
+    end
+    -- draw menu item
+    love.graphics.printf(gameMenu[i], (i*fontHeight)+WIDTH/2, HEIGHT, HEIGHT, "center", 1.5*math.pi)
+  end
 end
 
 function drawHowToPlay()
