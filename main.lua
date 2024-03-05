@@ -13,7 +13,7 @@
 score = {}
 score.cpu = 0
 score.human = 0
-score.max = 0
+score.max = 5
 
 -- Possible game states: MENU, GAME, HOWTOPLAY, SETTINGS, GAMEOVER 
 gameState = "MENU"
@@ -31,16 +31,16 @@ function love.load()
     gameState = "GAMEOVER"
   else
     WIDTH, HEIGHT = love.graphics.getDimensions()
-    LEFT = 35
+    LEFT = 45
     RIGHT = WIDTH - 5
-    TOP = 35
-    BOTTOM = HEIGHT - 5
+    TOP = 25
+    BOTTOM = HEIGHT - 75
 
-    LEFTPADDLE = LEFT + 5
-    RIGHTPADDLE = RIGHT - 5
+    LEFTPADDLE = LEFT + 25
+    RIGHTPADDLE = RIGHT - 25
 
     -- game ball
-    ball = createBall()
+    ball = createBall(5)
 
     -- ai
     rightPaddle = createPaddle(1)
@@ -49,11 +49,11 @@ function love.load()
   end
 end
 
-function createBall()
+function createBall(r)
   b = {}
   b.x = WIDTH/2
   b.y = HEIGHT/2
-  b.radius = 5
+  b.radius = r
   b.speed = 120
   b.directionX = 0.8
   b.directionY = 0.9
@@ -66,7 +66,7 @@ end
 function createPaddle(opp)
   paddle = {}
   paddle.height = 75
-  paddle.width = 5
+  paddle.width = 10
   paddle.speed = 120
   paddle.direction = 1
   paddle.y = HEIGHT/2
@@ -82,49 +82,56 @@ function randomInt(n)
   return math.floor(math.random()*n) + 1
 end
 
+function checkCollision(ba, pa)
+  local dx = ba.x - pa.x 
+  local dy = ba.y - pa.y 
+  return (pa.x - (pa.height / 2) < dx) and (pa.x + (pa.height / 2) > dx) and (pa.y - (pa.width / 2) < dy) and (pa.y +(pa.width / 2) > dy)
+  
+end
+
 function love.update(dt)
   local function moveBall()
     ball.x = ball.x + ball.directionX * ball.speed * dt
     ball.y = ball.y + ball.directionY * ball.speed * dt
 
     -- Right wall
-    if ball.x >= RIGHT then
+    if ball.x >= RIGHTPADDLE then
       score.cpu = score.cpu + 1
       love.load()
       -- Left wall
-    elseif ball.x <= LEFT then
+    elseif ball.x <= LEFTPADDLE then
       score.human = score.human + 1
       love.load()
       -- Bottom wall
-    elseif ball.y >= BOTTOM then
+    elseif ball.y >= BOTTOM+45 then
       ball.directionY = -ball.directionY 
-      ball.y = BOTTOM - 1
+      ball.y = BOTTOM+45 - 1
       -- Top wall
     elseif ball.y <= TOP then
       ball.directionY = -ball.directionY 
       ball.y = TOP + 1
       -- Left paddle
-    elseif ball.x <= (LEFTPADDLE+5) and ball.y <= (leftPaddle.y+leftPaddle.height-7) and ball.y >= (leftPaddle.y-leftPaddle.height+20) and ball.directionX < 0 then
-      ball.directionX = -ball.directionX 
-      ball.x = LEFTPADDLE + 10
-      ball.colourR = randomInt(255) 
-      ball.colourG = randomInt(255) 
-      ball.colourB = randomInt(255) 
-      sound:play()
+    elseif ball.x <= (LEFTPADDLE+5) and ball.y <= (leftPaddle.y+leftPaddle.height-2) and ball.y >= (leftPaddle.y-leftPaddle.height+20) and ball.directionX < 0 then
+    --elseif checkCollision(ball, paddle) then
+    ball.directionX = -ball.directionX 
+    ball.colourR = randomInt(255)
+    ball.colourG = randomInt(255) 
+    ball.colourB = randomInt(255)
+    sound:play()
       -- Right paddle
-    elseif ball.x >= (RIGHTPADDLE-5) and ball.y <= (rightPaddle.y+rightPaddle.height-7) and ball.y >= (rightPaddle.y-rightPaddle.height+20) and ball.directionX > 0 then
-      ball.directionX = -ball.directionX 
-      ball.x = RIGHTPADDLE - 10
-      ball.colourR = randomInt(255) 
-      ball.colourG = randomInt(255) 
-      ball.colourB = randomInt(255) 
-      sound:play()
+    elseif ball.x >= (RIGHTPADDLE-5) and ball.y <= (rightPaddle.y+rightPaddle.height-2) and ball.y >= (rightPaddle.y-rightPaddle.height+20) and ball.directionX > 0 then
+    ball.directionX = -ball.directionX 
+    ball.colourR = randomInt(255)
+    ball.colourG = randomInt(255) 
+    ball.colourB = randomInt(255)
+    sound:play()
     end	
+
   end
 
   local function movePaddle(p)
     p.y = p.y + p.speed * p.direction * dt
-    if p.y <= TOP or p.y >= (BOTTOM - 40) then
+    if p.y <= TOP or p.y >= BOTTOM-5 then
       p.direction = -p.direction
     end
   end
@@ -155,7 +162,7 @@ end
 
 function love.draw()
   love.graphics.setFont(font)
-  if gameState == "MENU" then
+  if gameState == "MENU" or gameState == "RETRY" then
     drawMenu()
   elseif gameState == "HOWTOPLAY" then
     drawHowToPlay()
@@ -217,7 +224,7 @@ end
 
 function drawGame()
   -- Score board
-  love.graphics.print(score.cpu.."-"..score.human, WIDTH/2, 40+HEIGHT/2, 1.5*math.pi)
+  love.graphics.printf(score.cpu.."-"..score.human, WIDTH/2, HEIGHT, HEIGHT, "center", 1.5*math.pi)
   love.graphics.line(WIDTH/2, 0, WIDTH/2, HEIGHT)
 
   -- Game ball
